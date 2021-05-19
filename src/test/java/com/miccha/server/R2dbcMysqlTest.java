@@ -91,9 +91,9 @@ public class R2dbcMysqlTest {
                                                 .single();
 
         StepVerifier.create(countMono)
-                .expectNext(1)
-                .expectComplete()
-                .verify();
+                    .expectNext(1)
+                    .expectComplete()
+                    .verify();
     }
 
     private static ConnectionFactory getConnectionFactory() {
