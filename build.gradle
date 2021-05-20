@@ -16,9 +16,16 @@ dependencies {
 	compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.19'
 	compile 'com.googlecode.json-simple:json-simple:1.1.1'
 
+	implementation 'dev.miku:r2dbc-mysql:0.8.2.RELEASE'
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'io.projectreactor:reactor-test'
+
+	compileOnly 'org.projectlombok:lombok:1.18.20'
+	annotationProcessor 'org.projectlombok:lombok:1.18.20'
+
+	testCompileOnly 'org.projectlombok:lombok:1.18.20'
+	testAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
 }
 
 test {
