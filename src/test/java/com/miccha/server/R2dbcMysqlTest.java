@@ -99,7 +99,8 @@ public class R2dbcMysqlTest {
     private static ConnectionFactory getConnectionFactory() {
         return ConnectionFactories.get(
                 ConnectionFactoryOptions.builder()
-                                        .option(DRIVER, "mysql")
+                                        .option(PROTOCOL, "mysql")
+                                        .option(DRIVER, "pool")
                                         .option(HOST, MYSQL_HOST)
                                         .option(USER, MYSQL_USER)
                                         .option(PORT, MYSQL_PORT)
