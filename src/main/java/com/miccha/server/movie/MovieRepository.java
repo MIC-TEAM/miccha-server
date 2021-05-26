@@ -1,6 +1,24 @@
 package com.miccha.server.movie;
 
-import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import com.miccha.server.movie.model.Movie;
+import lombok.AllArgsConstructor;
+import org.springframework.data.r2dbc.core.R2dbcEntityTemplate;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
-public interface MovieRepository extends ReactiveCrudRepository<Movie, Long> {
+@AllArgsConstructor
+@Service
+public class MovieRepository {
+    private R2dbcEntityTemplate template;
+
+    public Flux<Movie> getByTagId(@NonNull Long tagId) {
+        final String query = "select m.* from movie as m inner join movie_tag_map as mtm where m.id = mtm.movie_id and mtm.tag_id = ?";
+        return template.getDatabaseClient()
+                       .sql(query)
+                       .bind(0, tagId)
+                       .fetch()
+                       .all()
+                       .map(columnMap -> Movie.of(columnMap));
+    }
 }
