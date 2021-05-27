@@ -2,16 +2,18 @@ package com.miccha.server.http;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.reactive.function.server.RequestPredicate;
 import org.springframework.web.reactive.function.server.RouterFunction;
 import org.springframework.web.reactive.function.server.RouterFunctions;
 import org.springframework.web.reactive.function.server.ServerResponse;
 
 @Configuration
-public class MovieRouter {
+public class UserRouter {
+
     @Bean
-    public RouterFunction<ServerResponse> routeMovie(MovieHandler handler) {
+    public RouterFunction<ServerResponse> routeUser(UserHandler handler) {
         return RouterFunctions.route()
-                              .GET("/v1/movies", handler::getPage)
+                              .POST("/api/users", handler::signUp)
                               .build();
     }
 }
