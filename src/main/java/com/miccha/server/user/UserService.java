@@ -2,6 +2,7 @@ package com.miccha.server.user;
 
 import com.miccha.server.exception.DuplicateEmailException;
 import com.miccha.server.exception.InvalidEmailException;
+import com.miccha.server.exception.InvalidPasswordException;
 import com.miccha.server.user.model.User;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -9,9 +10,15 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.util.regex.Pattern;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    private static Pattern specialCharacterPattern = Pattern.compile("[^a-z0-9 ]", Pattern.CASE_INSENSITIVE);
+    private static Pattern alphabetPattern = Pattern.compile("[A-Za-z]");
+    private static Pattern digitPattern = Pattern.compile("[0-9]");
+
     private final UserRepository userRepository;
 
     public Mono<Void> signUp(@NonNull User user) {
@@ -19,6 +26,11 @@ public class UserService {
                    .doOnNext(userValue -> {
                        if (EmailValidator.getInstance().isValid(userValue.getEmail()) == false) {
                            throw new InvalidEmailException();
+                       }
+                   })
+                   .doOnNext(userValue -> {
+                       if (isValidPassword(user.getPassword()) == false) {
+                           throw new InvalidPasswordException();
                        }
                    })
                    .flatMap(userValue -> userRepository.existsByEmail(userValue.getEmail()))
@@ -31,5 +43,25 @@ public class UserService {
                    .then(userRepository.save(user))
                    .single()
                    .then(Mono.empty());
+    }
+
+    private boolean isValidPassword(String password) {
+        if (password.length() < 10) {
+            return false;
+        }
+
+        int matchCount = 0;
+
+        if (specialCharacterPattern.matcher(password).find()) {
+            matchCount++;
+        }
+        if (alphabetPattern.matcher(password).find()) {
+            matchCount++;
+        }
+        if (digitPattern.matcher(password).find()) {
+            matchCount++;
+        }
+
+        return matchCount >= 2;
     }
 }
