@@ -13,4 +13,8 @@ public enum ErrorCode {
 
     @Getter
     private int code;
+
+    public boolean isSuccess() {
+        return this == SUCCESS;
+    }
 }

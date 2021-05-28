@@ -4,7 +4,7 @@ import com.miccha.server.ErrorCode;
 
 public class InvalidEmailException extends MicchaException {
     @Override
-    public int getErrorCode() {
-        return ErrorCode.INVALID_EMAIL.getCode();
+    public ErrorCode getErrorCode() {
+        return ErrorCode.INVALID_EMAIL;
     }
 }
