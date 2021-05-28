@@ -26,7 +26,7 @@ public class Movie {
         movie.setDescription((String) columnMap.get("description"));
         movie.setRating((String) columnMap.get("rating"));
         movie.setDuration((Integer) columnMap.get("duration"));
-        movie.setTitle((String) columnMap.get("thumbnail"));
+        movie.setThumbnail((String) columnMap.get("thumbnail"));
         return movie;
     }
 }
