@@ -27,6 +27,8 @@ dependencies {
 
 	testCompileOnly 'org.projectlombok:lombok:1.18.20'
 	testAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
+
+	implementation group: 'commons-validator', name: 'commons-validator', version: '1.6'
 }
 
 test {
