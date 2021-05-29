@@ -9,7 +9,9 @@ public enum ErrorCode {
     DUPLICATE_EMAIL(1),
     INVALID_EMAIL(2),
     INVALID_PASSWORD(3),
-    MISSING_EMAIL(4);
+    MISSING_EMAIL(4),
+    REQUEST_MISSING_TOKEN(5),
+    REQUEST_MISSING_PASSWORD(6);
 
     @Getter
     private int code;
