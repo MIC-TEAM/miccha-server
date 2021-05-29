@@ -3,6 +3,7 @@ package com.miccha.server.user;
 import com.miccha.server.exception.DuplicateEmailException;
 import com.miccha.server.exception.InvalidEmailException;
 import com.miccha.server.exception.InvalidPasswordException;
+import com.miccha.server.movie.model.MovieCollection;
 import com.miccha.server.user.model.User;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -10,6 +11,9 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.regex.Pattern;
 
 @Service
@@ -32,6 +36,15 @@ public class UserService {
                        if (isValidPassword(user.getPassword()) == false) {
                            throw new InvalidPasswordException();
                        }
+
+                       MessageDigest md;
+                       try {
+                           md = MessageDigest.getInstance("SHA-256");
+                       } catch (NoSuchAlgorithmException e) {
+                           throw new RuntimeException(e);
+                       }
+                       md.update(user.getPassword().getBytes());
+                       user.setPassword(String.format("%064x", new BigInteger(1, md.digest())));
                    })
                    .flatMap(userValue -> userRepository.existsByEmail(userValue.getEmail()))
                    .single()
