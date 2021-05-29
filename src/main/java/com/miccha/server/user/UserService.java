@@ -1,9 +1,6 @@
 package com.miccha.server.user;
 
-import com.miccha.server.exception.DuplicateEmailException;
-import com.miccha.server.exception.InvalidEmailException;
-import com.miccha.server.exception.InvalidPasswordException;
-import com.miccha.server.movie.model.MovieCollection;
+import com.miccha.server.exception.*;
 import com.miccha.server.user.model.User;
 import com.miccha.server.utils.PasswordHasher;
 import lombok.RequiredArgsConstructor;
@@ -48,6 +45,32 @@ public class UserService {
                        }
                    })
                    .then(userRepository.save(user))
+                   .single()
+                   .then(Mono.empty());
+    }
+
+    public Mono<Void> reset(@NonNull User user) {
+        return Mono.just(user)
+                   .doOnNext(userValue -> {
+                       if (isNull(user.getToken())) {
+                           throw new RequestMissingTokenException();
+                       }
+
+                       if (isNull(user.getPassword())) {
+                           throw new RequestMissingPasswordException();
+                       }
+
+                       if (isValidPassword(user.getPassword()) == false) {
+                           throw new InvalidPasswordException();
+                       }
+                   })
+                   .flatMap(userValue -> userRepository.findByToken(userValue.getToken()))
+                   .single()
+                   .flatMap(foundUser -> {
+                       foundUser.setPassword(passwordHasher.getHahsedPassword(user.getPassword()));
+                       foundUser.setToken(null);
+                       return userRepository.save(foundUser);
+                   })
                    .single()
                    .then(Mono.empty());
     }
