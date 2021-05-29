@@ -14,6 +14,7 @@ public class UserRouter {
         return RouterFunctions.route()
                               .POST("/api/users", handler::signUp)
                               .POST("/api/password", handler::reset)
+                              .POST("/api/password/retrieve", handler::sendEmail)
                               .build();
     }
 }

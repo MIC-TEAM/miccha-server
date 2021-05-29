@@ -33,6 +33,13 @@ public class UserHandler {
         return createResponse(operation);
     }
 
+    public Mono<ServerResponse> sendEmail(ServerRequest request) {
+        Mono<Void> operation = request.bodyToMono(User.class)
+                                      .single()
+                                      .flatMap(user -> userService.sendEmail(user));
+        return createResponse(operation);
+    }
+
     private Mono<ServerResponse> createResponse(Mono<Void> operation) {
         return operation.thenReturn(ErrorCode.SUCCESS)
                         .onErrorResume(MicchaException.class, e -> Mono.just(e.getErrorCode()))

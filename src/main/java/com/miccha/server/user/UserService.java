@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import static java.util.Objects.isNull;
+
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Service
@@ -72,6 +74,27 @@ public class UserService {
                        return userRepository.save(foundUser);
                    })
                    .single()
+                   .then(Mono.empty());
+    }
+
+    public Mono<Void> sendEmail(@NonNull User user) {
+        final UUID uuid = UUID.randomUUID();
+        return Mono.just(user)
+                   .doOnNext(userValue -> {
+                       if (isNull(userValue.getEmail())) {
+                           throw new RequestMissingEmailException();
+                       }
+                   })
+                   .flatMap(userValue -> userRepository.findByEmail(userValue.getEmail()))
+                   .single()
+                   .flatMap(foundUser -> {
+                       foundUser.setToken(uuid.toString());
+                       return userRepository.save(foundUser);
+                   })
+                   .flatMap(updatedUser -> {
+                       // TODO: send email
+                       return Mono.empty();
+                   })
                    .then(Mono.empty());
     }
 
