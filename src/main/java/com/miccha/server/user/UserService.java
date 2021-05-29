@@ -2,6 +2,7 @@ package com.miccha.server.user;
 
 import com.miccha.server.exception.*;
 import com.miccha.server.user.model.User;
+import com.miccha.server.utils.EmailSender;
 import com.miccha.server.utils.PasswordHasher;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -21,9 +22,9 @@ public class UserService {
     private static Pattern alphabetPattern = Pattern.compile("[A-Za-z]");
     private static Pattern digitPattern = Pattern.compile("[0-9]");
 
-
     private final PasswordHasher passwordHasher;
     private final UserRepository userRepository;
+    private final EmailSender emailSender;
 
     public Mono<Void> signUp(@NonNull User user) {
         return Mono.just(user)
@@ -92,8 +93,8 @@ public class UserService {
                        return userRepository.save(foundUser);
                    })
                    .flatMap(updatedUser -> {
-                       // TODO: send email
-                       return Mono.empty();
+                       final String subject = "Here is your token for miccha password reset";
+                       return emailSender.send(subject, updatedUser.getToken(), updatedUser.getEmail());
                    })
                    .then(Mono.empty());
     }
