@@ -5,15 +5,14 @@ import com.miccha.server.exception.InvalidEmailException;
 import com.miccha.server.exception.InvalidPasswordException;
 import com.miccha.server.movie.model.MovieCollection;
 import com.miccha.server.user.model.User;
+import com.miccha.server.utils.PasswordHasher;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import static java.util.Objects.isNull;
 import java.util.regex.Pattern;
 
 @Service
@@ -23,6 +22,8 @@ public class UserService {
     private static Pattern alphabetPattern = Pattern.compile("[A-Za-z]");
     private static Pattern digitPattern = Pattern.compile("[0-9]");
 
+
+    private final PasswordHasher passwordHasher;
     private final UserRepository userRepository;
 
     public Mono<Void> signUp(@NonNull User user) {
@@ -37,14 +38,7 @@ public class UserService {
                            throw new InvalidPasswordException();
                        }
 
-                       MessageDigest md;
-                       try {
-                           md = MessageDigest.getInstance("SHA-256");
-                       } catch (NoSuchAlgorithmException e) {
-                           throw new RuntimeException(e);
-                       }
-                       md.update(user.getPassword().getBytes());
-                       user.setPassword(String.format("%064x", new BigInteger(1, md.digest())));
+                       user.setPassword(passwordHasher.getHahsedPassword(user.getPassword()));
                    })
                    .flatMap(userValue -> userRepository.existsByEmail(userValue.getEmail()))
                    .single()
