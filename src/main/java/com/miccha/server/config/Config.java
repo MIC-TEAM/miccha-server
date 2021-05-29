@@ -11,4 +11,7 @@ import org.springframework.stereotype.Service;
 public class Config {
     @Value("${home.pageSize}")
     private int pageSize;
+
+    @Value("${hash.algorithm}")
+    private String hashAlgorithm;
 }
