@@ -2,6 +2,7 @@ package com.miccha.server.user;
 
 import com.miccha.server.exception.*;
 import com.miccha.server.user.model.User;
+import com.miccha.server.utils.EmailSender;
 import com.miccha.server.utils.PasswordHasher;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.validator.routines.EmailValidator;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import static java.util.Objects.isNull;
+
+import java.util.UUID;
 import java.util.regex.Pattern;
 
 @Service
@@ -19,9 +22,9 @@ public class UserService {
     private static Pattern alphabetPattern = Pattern.compile("[A-Za-z]");
     private static Pattern digitPattern = Pattern.compile("[0-9]");
 
-
     private final PasswordHasher passwordHasher;
     private final UserRepository userRepository;
+    private final EmailSender emailSender;
 
     public Mono<Void> signUp(@NonNull User user) {
         return Mono.just(user)
@@ -72,6 +75,27 @@ public class UserService {
                        return userRepository.save(foundUser);
                    })
                    .single()
+                   .then(Mono.empty());
+    }
+
+    public Mono<Void> sendEmail(@NonNull User user) {
+        final UUID uuid = UUID.randomUUID();
+        return Mono.just(user)
+                   .doOnNext(userValue -> {
+                       if (isNull(userValue.getEmail())) {
+                           throw new RequestMissingEmailException();
+                       }
+                   })
+                   .flatMap(userValue -> userRepository.findByEmail(userValue.getEmail()))
+                   .single()
+                   .flatMap(foundUser -> {
+                       foundUser.setToken(uuid.toString());
+                       return userRepository.save(foundUser);
+                   })
+                   .flatMap(updatedUser -> {
+                       final String subject = "Here is your token for miccha password reset";
+                       return emailSender.send(subject, updatedUser.getToken(), updatedUser.getEmail());
+                   })
                    .then(Mono.empty());
     }
 

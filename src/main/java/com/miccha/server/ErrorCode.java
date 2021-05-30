@@ -11,7 +11,8 @@ public enum ErrorCode {
     INVALID_PASSWORD(3),
     MISSING_EMAIL(4),
     REQUEST_MISSING_TOKEN(5),
-    REQUEST_MISSING_PASSWORD(6);
+    REQUEST_MISSING_PASSWORD(6),
+    REQUEST_MISSING_EMAIL(7);
 
     @Getter
     private int code;

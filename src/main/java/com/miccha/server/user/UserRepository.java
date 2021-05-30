@@ -7,4 +7,5 @@ import reactor.core.publisher.Mono;
 public interface UserRepository extends ReactiveCrudRepository<User, Long> {
     Mono<Boolean> existsByEmail(String email);
     Mono<User> findByToken(String token);
+    Mono<User> findByEmail(String email);
 }

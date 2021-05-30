@@ -29,6 +29,7 @@ dependencies {
 	testAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
 
 	implementation group: 'commons-validator', name: 'commons-validator', version: '1.6'
+	implementation group: 'org.simplejavamail', name: 'simple-java-mail', version: '6.5.4'
 }
 
 test {
