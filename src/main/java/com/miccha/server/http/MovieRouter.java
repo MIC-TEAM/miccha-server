@@ -11,7 +11,7 @@ public class MovieRouter {
     @Bean
     public RouterFunction<ServerResponse> routeMovie(MovieHandler handler) {
         return RouterFunctions.route()
-                              .GET("/v1/movies", handler::getPage)
+                              .GET("/api/home", handler::getPage)
                               .build();
     }
 }
