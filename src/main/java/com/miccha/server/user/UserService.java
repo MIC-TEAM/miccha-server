@@ -1,6 +1,6 @@
 package com.miccha.server.user;
 
-import com.miccha.server.exception.*;
+import com.miccha.server.exception.model.*;
 import com.miccha.server.user.model.User;
 import com.miccha.server.utils.EmailSender;
 import com.miccha.server.utils.PasswordHasher;
