@@ -85,6 +85,9 @@ public class UserService {
                        if (isNull(userValue.getEmail())) {
                            throw new RequestMissingEmailException();
                        }
+                       if (userRepository.findByEmail(userValue.getEmail())==null) {
+                           throw new UnknownEmailException();
+                       }
                    })
                    .flatMap(userValue -> userRepository.findByEmail(userValue.getEmail()))
                    .single()
