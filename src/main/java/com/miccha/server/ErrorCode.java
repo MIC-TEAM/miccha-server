@@ -3,6 +3,7 @@ package com.miccha.server;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+// 에러코드 enum
 @AllArgsConstructor
 public enum ErrorCode {
     SUCCESS(0),

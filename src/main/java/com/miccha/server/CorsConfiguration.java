@@ -8,6 +8,7 @@ import org.springframework.web.reactive.config.WebFluxConfigurer;
 
 import java.util.List;
 
+// CORS 사용 설정
 @AllArgsConstructor
 @Configuration
 public class CorsConfiguration implements WebFluxConfigurer {

@@ -5,6 +5,7 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+//application.yml 설정 불러오는 객체
 @Getter
 @Setter
 @Service

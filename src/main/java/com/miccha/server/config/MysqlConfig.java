@@ -10,11 +10,12 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
+//MYSQL 설정 객체
 @Getter
 @Setter
 @Component
 @ConfigurationProperties("mysql")
-@ConditionalOnProperty(prefix = "mysql", value = {"host", "port", "username", "password", "database"})
+@ConditionalOnProperty(prefix = "mysql", value = { "host", "port", "username", "password", "database" })
 public class MysqlConfig {
     private String host;
     private int port;
@@ -23,12 +24,7 @@ public class MysqlConfig {
     private String database;
 
     public ConnectionFactory createConnectionFactory() {
-        return new JasyncConnectionFactory(new MySQLConnectionFactory(new Configuration(
-                username,
-                host,
-                port,
-                password,
-                database
-        )));
+        return new JasyncConnectionFactory(
+                new MySQLConnectionFactory(new Configuration(username, host, port, password, database)));
     }
 }
