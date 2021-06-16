@@ -118,4 +118,8 @@ public class UserService {
 
         return matchCount >= 2;
     }
+
+    public Mono<User> findByUsername(@NonNull String username) {
+        return userRepository.findByEmail(username);
+    }
 }
