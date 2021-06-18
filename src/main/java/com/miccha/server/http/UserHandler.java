@@ -60,7 +60,7 @@ public class UserHandler {
                           return passwordEncoder.encode(pair.getKey().getPassword()).equals(pair.getValue().getPassword());
                       })
                       .flatMap(pair -> ServerResponse.ok()
-                                                 .body(BodyInserters.fromValue(ImmutableMap.of("accessToke", jwtUtil.generateToken(pair.getValue()))))))
+                                                 .body(BodyInserters.fromValue(ImmutableMap.of("accessToken", jwtUtil.generateToken(pair.getValue()))))))
                       .switchIfEmpty(ServerResponse.status(HttpStatus.UNAUTHORIZED).build());
     }
 }

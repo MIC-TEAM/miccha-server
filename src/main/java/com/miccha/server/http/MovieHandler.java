@@ -21,4 +21,12 @@ public class MovieHandler {
                                                           .contentType(MediaType.APPLICATION_JSON)
                                                           .body(BodyInserters.fromValue(page)));
     }
+
+    public Mono<ServerResponse> getCategories(ServerRequest request) {
+        int pageOffset = Integer.parseInt(request.queryParam("page").orElse("0"));
+        return movieService.getPage(pageOffset)
+                           .flatMap(page -> ServerResponse.ok()
+                                                          .contentType(MediaType.APPLICATION_JSON)
+                                                          .body(BodyInserters.fromValue(page)));
+    }
 }

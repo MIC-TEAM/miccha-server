@@ -34,6 +34,11 @@ public class UserService {
                        }
                    })
                    .doOnNext(userValue -> {
+                       if(isNull(userValue.getName())) {
+                           throw new InvalidNameException();
+                       }
+                   })
+                   .doOnNext(userValue -> {
                        if (isValidPassword(user.getPassword()) == false) {
                            throw new InvalidPasswordException();
                        }

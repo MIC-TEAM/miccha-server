@@ -25,4 +25,14 @@ public class MovieService {
                                                            .doOnSuccess(movies -> page.add(new MovieCollection(tag.getValue(), movies))))
                             .then(Mono.just(page));
     }
+
+    public Mono<List<MovieCollection>> getCategories(int pageOffset) {
+        List<MovieCollection> page = new CopyOnWriteArrayList<>();
+        return tagRepository.getWithBounds(pageOffset * config.getPageSize(), config.getPageSize())
+                            .flatMap(tag -> movieRepository.getByTagId(tag.getId())
+                                                           .collectList()
+                                                           .single()
+                                                           .doOnSuccess(movies -> page.add(new MovieCollection(tag.getValue(), movies))))
+                            .then(Mono.just(page));
+    }
 }
