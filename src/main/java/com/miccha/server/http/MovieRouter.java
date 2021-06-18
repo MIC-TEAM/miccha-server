@@ -12,7 +12,7 @@ public class MovieRouter {
     public RouterFunction<ServerResponse> routeMovie(MovieHandler handler) {
         return RouterFunctions.route()
                               .GET("/api/home", handler::getPage)
-                              .GET("/api/categories", handler::getPage)
+                              .GET("/api/categories", handler::getCategories)
                               .build();
     }
 }
