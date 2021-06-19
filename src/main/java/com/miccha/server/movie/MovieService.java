@@ -2,6 +2,8 @@ package com.miccha.server.movie;
 
 import com.miccha.server.config.Config;
 import com.miccha.server.movie.model.MovieCollection;
+import com.miccha.server.movie.model.TagCollection;
+
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -24,5 +26,12 @@ public class MovieService {
                                                            .single()
                                                            .doOnSuccess(movies -> page.add(new MovieCollection(tag.getValue(), movies))))
                             .then(Mono.just(page));
+    }
+
+    public Mono<List<TagCollection>> getCategories() {
+        List<TagCollection> tags = new CopyOnWriteArrayList<>();
+        return tagRepository.getAllTags()
+                            .flatMap(tag -> Mono.just(tags.add(new TagCollection(tag.getId(), tag.getValue()))))
+                            .then(Mono.just(tags));
     }
 }
