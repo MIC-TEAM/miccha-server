@@ -19,4 +19,9 @@ public class TagRepository {
                        .matching(Query.query(where("id").greaterThanOrEquals(offset)).limit(limit))
                        .all();
     }
+
+    public Flux<Tag> getAllTags() {
+        return template.select(Tag.class)
+                       .all();
+    }
 }
