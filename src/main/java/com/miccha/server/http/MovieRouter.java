@@ -13,6 +13,7 @@ public class MovieRouter {
         return RouterFunctions.route()
                               .GET("/api/home", handler::getPage)
                               .GET("/api/categories", handler::getCategories)
+                              .GET("/api/categories/contents", handler::getCategorieContents)
                               .build();
     }
 }
