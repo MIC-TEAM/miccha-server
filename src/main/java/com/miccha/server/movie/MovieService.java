@@ -3,10 +3,12 @@ package com.miccha.server.movie;
 import com.miccha.server.config.Config;
 import com.miccha.server.movie.model.Movie;
 import com.miccha.server.movie.model.MovieCollection;
+import com.miccha.server.movie.model.MovieDetail;
 import com.miccha.server.movie.model.TagCollection;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -18,6 +20,8 @@ public class MovieService {
     private Config config;
     private MovieRepository movieRepository;
     private TagRepository tagRepository;
+    private DirectorRepository directorRepository;
+    private ActorRepository actorRepository;
 
     public Mono<List<MovieCollection>> getPage(int pageOffset) {
         List<MovieCollection> page = new CopyOnWriteArrayList<>();
@@ -40,5 +44,25 @@ public class MovieService {
         return movieRepository.getByTagId(category)
                               .filter(x -> x.getId() >= (page - 1) * config.getPageSize() && x.getId() < (page * config.getPageSize()))
                               .collectList();
+    }
+
+    public Mono<Movie> getDetail(int movieId) {
+        return movieRepository.get(movieId)
+                              .flatMap(movie -> {
+                                  Flux<String> tagFlux = tagRepository.getAllByMovieId(movieId);
+                                  Flux<String> directorFlux = directorRepository.getAllByMovieId(movieId);
+                                  Flux<String> actorFlux = actorRepository.getAllByMovieId(movieId);
+                                  return tagFlux.collectList()
+                                                .zipWith(directorFlux.collectList())
+                                                .zipWith(actorFlux.collectList())
+                                                .single()
+                                                .map(tuple -> {
+                                                    List<String> directors = tuple.getT1().getT2();
+                                                    List<String> actors = tuple.getT2();
+                                                    List<String> tags = tuple.getT1().getT1();
+                                                    movie.setDetails(new MovieDetail(directors, actors, tags));
+                                                    return movie;
+                                                });
+                              });
     }
 }
