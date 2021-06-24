@@ -8,7 +8,6 @@ import com.miccha.server.movie.model.TagCollection;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -49,20 +48,14 @@ public class MovieService {
     public Mono<Movie> getDetail(int movieId) {
         return movieRepository.get(movieId)
                               .flatMap(movie -> {
-                                  Flux<String> tagFlux = tagRepository.getAllByMovieId(movieId);
-                                  Flux<String> directorFlux = directorRepository.getAllByMovieId(movieId);
-                                  Flux<String> actorFlux = actorRepository.getAllByMovieId(movieId);
-                                  return tagFlux.collectList()
-                                                .zipWith(directorFlux.collectList())
-                                                .zipWith(actorFlux.collectList())
-                                                .single()
-                                                .map(tuple -> {
-                                                    List<String> directors = tuple.getT1().getT2();
-                                                    List<String> actors = tuple.getT2();
-                                                    List<String> tags = tuple.getT1().getT1();
-                                                    movie.setDetails(new MovieDetail(directors, actors, tags));
-                                                    return movie;
-                                                });
+                                  Mono<List<String>> directors = directorRepository.getAllByMovieId(movieId).collectList();
+                                  Mono<List<String>> actors = actorRepository.getAllByMovieId(movieId).collectList();
+                                  Mono<List<String>> tags = tagRepository.getAllByMovieId(movieId).collectList();
+                                  return Mono.zip(directors, actors, tags)
+                                             .map(tuple -> {
+                                                 movie.setDetails(new MovieDetail(tuple.getT1(), tuple.getT2(), tuple.getT3()));
+                                                 return movie;
+                                             });
                               });
     }
 }
