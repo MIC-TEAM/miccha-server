@@ -28,4 +28,13 @@ public class MovieHandler {
                                                           .contentType(MediaType.APPLICATION_JSON)
                                                           .body(BodyInserters.fromValue(tags)));
     }
+
+    public Mono<ServerResponse> getCategorieContents(ServerRequest request) {
+        int page = Integer.parseInt(request.queryParam("page").orElse("1"));
+        Long category = Long.parseLong(request.queryParam("category").orElse("1"));
+        return movieService.getCategoriesContents(page, category)
+                           .flatMap(tags -> ServerResponse.ok()
+                                                          .contentType(MediaType.APPLICATION_JSON)
+                                                          .body(BodyInserters.fromValue(tags)));
+    }
 }

@@ -1,6 +1,7 @@
 package com.miccha.server.movie;
 
 import com.miccha.server.config.Config;
+import com.miccha.server.movie.model.Movie;
 import com.miccha.server.movie.model.MovieCollection;
 import com.miccha.server.movie.model.TagCollection;
 
@@ -33,5 +34,11 @@ public class MovieService {
         return tagRepository.getAllTags()
                             .flatMap(tag -> Mono.just(tags.add(new TagCollection(tag.getId(), tag.getValue()))))
                             .then(Mono.just(tags));
+    }
+
+    public Mono<List<Movie>> getCategoriesContents(int page, Long category) {
+        return movieRepository.getByTagId(category)
+                              .filter(x -> x.getId() >= (page - 1) * config.getPageSize() && x.getId() < (page * config.getPageSize()))
+                              .collectList();
     }
 }

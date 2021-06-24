@@ -12,11 +12,11 @@ import reactor.core.publisher.Flux;
 public class MovieRepository {
     private R2dbcEntityTemplate template;
 
-    public Flux<Movie> getByTagId(@NonNull Long tagId) {
+    public Flux<Movie> getByTagId(@NonNull Long category) {
         final String query = "select m.* from movie as m inner join movie_tag_map as mtm where m.id = mtm.movie_id and mtm.tag_id = ?";
         return template.getDatabaseClient()
                        .sql(query)
-                       .bind(0, tagId)
+                       .bind(0, category)
                        .fetch()
                        .all()
                        .map(columnMap -> Movie.of(columnMap));
