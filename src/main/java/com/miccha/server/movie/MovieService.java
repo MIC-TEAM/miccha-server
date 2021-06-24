@@ -38,7 +38,7 @@ public class MovieService {
 
     public Mono<List<Movie>> getCategoriesContents(int page, Long category) {
         return movieRepository.getByTagId(category)
-                              .filter(x -> x.getId() >= (page - 1) * config.getPageSize() && x.getId() <= (page * config.getPageSize()))
+                              .filter(x -> x.getId() >= (page - 1) * config.getPageSize() && x.getId() < (page * config.getPageSize()))
                               .collectList();
     }
 }
