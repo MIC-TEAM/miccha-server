@@ -24,4 +24,14 @@ public class TagRepository {
         return template.select(Tag.class)
                        .all();
     }
+
+    public Flux<String> getAllByMovieId(int movieId) {
+        final String query = "select t.value from movie_tag_map as mtm inner join tag as t where mtm.movie_id = ? and mtm.tag_id = t.id";
+        return template.getDatabaseClient()
+                       .sql(query)
+                       .bind(0, movieId)
+                       .fetch()
+                       .all()
+                       .map(columnMap -> (String) columnMap.get("value"));
+    }
 }

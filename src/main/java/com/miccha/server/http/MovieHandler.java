@@ -1,5 +1,6 @@
 package com.miccha.server.http;
 
+import com.miccha.server.exception.model.RequestInvalidMovieIdException;
 import com.miccha.server.movie.MovieService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
@@ -33,6 +34,20 @@ public class MovieHandler {
         int page = Integer.parseInt(request.queryParam("page").orElse("1"));
         Long category = Long.parseLong(request.queryParam("category").orElse("1"));
         return movieService.getCategoriesContents(page, category)
+                           .flatMap(tags -> ServerResponse.ok()
+                                                          .contentType(MediaType.APPLICATION_JSON)
+                                                          .body(BodyInserters.fromValue(tags)));
+    }
+
+    public Mono<ServerResponse> getDetail(ServerRequest request) {
+        int movieId;
+        try {
+            movieId = Integer.parseInt(request.pathVariable("movieId"));
+        } catch (Exception e) {
+            throw new RequestInvalidMovieIdException();
+        }
+
+        return movieService.getDetail(movieId)
                            .flatMap(tags -> ServerResponse.ok()
                                                           .contentType(MediaType.APPLICATION_JSON)
                                                           .body(BodyInserters.fromValue(tags)));

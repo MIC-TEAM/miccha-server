@@ -3,6 +3,7 @@ package com.miccha.server.movie;
 import com.miccha.server.config.Config;
 import com.miccha.server.movie.model.Movie;
 import com.miccha.server.movie.model.MovieCollection;
+import com.miccha.server.movie.model.MovieDetail;
 import com.miccha.server.movie.model.TagCollection;
 
 import lombok.AllArgsConstructor;
@@ -18,6 +19,8 @@ public class MovieService {
     private Config config;
     private MovieRepository movieRepository;
     private TagRepository tagRepository;
+    private DirectorRepository directorRepository;
+    private ActorRepository actorRepository;
 
     public Mono<List<MovieCollection>> getPage(int pageOffset) {
         List<MovieCollection> page = new CopyOnWriteArrayList<>();
@@ -40,5 +43,19 @@ public class MovieService {
         return movieRepository.getByTagId(category)
                               .filter(x -> x.getId() >= (page - 1) * config.getPageSize() && x.getId() < (page * config.getPageSize()))
                               .collectList();
+    }
+
+    public Mono<Movie> getDetail(int movieId) {
+        return movieRepository.get(movieId)
+                              .flatMap(movie -> {
+                                  Mono<List<String>> directors = directorRepository.getAllByMovieId(movieId).collectList();
+                                  Mono<List<String>> actors = actorRepository.getAllByMovieId(movieId).collectList();
+                                  Mono<List<String>> tags = tagRepository.getAllByMovieId(movieId).collectList();
+                                  return Mono.zip(directors, actors, tags)
+                                             .map(tuple -> {
+                                                 movie.setDetails(new MovieDetail(tuple.getT1(), tuple.getT2(), tuple.getT3()));
+                                                 return movie;
+                                             });
+                              });
     }
 }
