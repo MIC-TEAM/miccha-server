@@ -9,5 +9,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class TagCollection {
   private Long id;
-  private String value;
+  private String name;
 }
