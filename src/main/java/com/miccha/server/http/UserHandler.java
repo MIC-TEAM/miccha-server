@@ -16,6 +16,9 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @AllArgsConstructor
 @Component
 public class UserHandler {
@@ -55,12 +58,22 @@ public class UserHandler {
     public Mono<ServerResponse> login(ServerRequest request) {
         return request.bodyToMono(User.class)
                       .flatMap(loginRequest -> userService.findByUsername(loginRequest.getEmail())
-                                                          .map(user -> Pair.of(loginRequest, user))
+                                                          .map(user -> Pair.of(loginRequest, user)))
                       .filter(pair -> {
                           return passwordEncoder.encode(pair.getKey().getPassword()).equals(pair.getValue().getPassword());
                       })
-                      .flatMap(pair -> ServerResponse.ok()
-                                                 .body(BodyInserters.fromValue(ImmutableMap.of("accessToken", jwtUtil.generateToken(pair.getValue()))))))
+                      .flatMap(pair -> {
+                          final User user = pair.getValue();
+                          final String token = jwtUtil.generateToken(user);
+
+                          Map<String, String> response = new HashMap<>();
+                          response.put("accessToken", token);
+                          response.put("email", user.getEmail());
+                          response.put("name", user.getName());
+
+                          return ServerResponse.ok()
+                                               .body(BodyInserters.fromValue(response));
+                      })
                       .switchIfEmpty(ServerResponse.status(HttpStatus.UNAUTHORIZED).build());
     }
 }
