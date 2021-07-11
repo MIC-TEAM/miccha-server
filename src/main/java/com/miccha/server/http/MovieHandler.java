@@ -1,6 +1,7 @@
 package com.miccha.server.http;
 
 import com.miccha.server.exception.model.RequestInvalidMovieIdException;
+import com.miccha.server.exception.model.RequestParameterNotFoundException;
 import com.miccha.server.movie.MovieService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.MediaType;
@@ -51,5 +52,13 @@ public class MovieHandler {
                            .flatMap(tags -> ServerResponse.ok()
                                                           .contentType(MediaType.APPLICATION_JSON)
                                                           .body(BodyInserters.fromValue(tags)));
+    }
+
+    public Mono<ServerResponse> doSearch(ServerRequest request) {
+        final String query = request.queryParam("q").orElseThrow(() -> new RequestParameterNotFoundException());
+        return movieService.doSearch(query)
+                           .collectList()
+                           .flatMap(movies -> ServerResponse.ok()
+                                                            .body(BodyInserters.fromValue(movies)));
     }
 }
