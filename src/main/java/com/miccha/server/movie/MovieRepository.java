@@ -31,4 +31,14 @@ public class MovieRepository {
                        .all()
                        .map(columnMap -> Movie.of(columnMap));
     }
+
+    public Flux<Movie> getByKeyword(@NonNull String keyword) {
+        final String query = "select m.* from keyword_movie_map as kmm inner join movie as m where kmm.keyword LIKE concat(?, '%') AND kmm.movie_id = m.id";
+        return template.getDatabaseClient()
+                       .sql(query)
+                       .bind(0, keyword)
+                       .fetch()
+                       .all()
+                       .map(columnMap -> Movie.of(columnMap));
+    }
 }

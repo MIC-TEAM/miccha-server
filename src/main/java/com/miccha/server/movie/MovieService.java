@@ -7,7 +7,10 @@ import com.miccha.server.movie.model.MovieDetail;
 import com.miccha.server.movie.model.TagCollection;
 
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -62,5 +65,12 @@ public class MovieService {
                                                  return movie;
                                              });
                               });
+    }
+
+    public Flux<Movie> doSearch(@NonNull String query) {
+        final String[] keywords = StringUtils.split(query, " ");
+        return Flux.fromArray(keywords)
+                   .flatMap(keyword -> movieRepository.getByKeyword(keyword))
+                   .distinct(movie -> movie.getId());
     }
 }
