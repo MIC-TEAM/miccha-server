@@ -16,6 +16,8 @@ public class UserRouter {
                               .POST("/api/password", handler::reset)
                               .POST("/api/password/retrieve", handler::sendEmail)
                               .POST("/api/session", handler::login)
+                              .POST("/api/setting", handler::changeSetting)
+                              .POST("/api/email/reset", handler::confirmChangeEmail)
                               .build();
     }
 }
