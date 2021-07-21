@@ -24,6 +24,7 @@ public class MovieService {
     private TagRepository tagRepository;
     private DirectorRepository directorRepository;
     private ActorRepository actorRepository;
+    private WishRepository wishRepository;
 
     public Mono<List<MovieCollection>> getPage(int pageOffset) {
         List<MovieCollection> page = new CopyOnWriteArrayList<>();
@@ -72,5 +73,24 @@ public class MovieService {
         return Flux.fromArray(keywords)
                    .flatMap(keyword -> movieRepository.getByKeyword(keyword))
                    .distinct(movie -> movie.getId());
+    }
+
+    public Boolean isExistWish(String email, int movieId) {
+        return wishRepository.countWish(email, movieId).map(x -> x == 0).block();
+    }
+
+    public Integer deleteWish(String email, int movieId) {
+        return wishRepository.deleteWish(email, movieId).flux().blockFirst();
+    }
+
+    public Integer setWish(String email, int movieId) {
+        return wishRepository.insertWish(email, movieId).flux().blockFirst();
+    }
+
+    public MovieCollection getWish(String email) {
+        return wishRepository.getWish(email)
+                             .collectSortedList()
+                             .map(x -> new MovieCollection("wishes", x))
+                             .block();
     }
 }

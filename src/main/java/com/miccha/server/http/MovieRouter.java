@@ -16,6 +16,8 @@ public class MovieRouter {
                               .GET("/api/categories/contents", handler::getCategorieContents)
                               .GET("/api/contents/{movieId}", handler::getDetail)
                               .GET("/api/search", handler::doSearch)
+                              .GET("/api/contents/{movieId}/wish", handler::setWish)
+                              .GET("/api/wishes", handler::getWish)
                               .build();
     }
 }
