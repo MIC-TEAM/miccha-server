@@ -2,6 +2,8 @@ package com.miccha.server.http;
 
 import com.google.common.collect.ImmutableMap;
 import com.miccha.server.ErrorCode;
+import com.miccha.server.exception.model.EmptyRequestBodyException;
+import com.miccha.server.exception.model.RequestMissingTokenException;
 import com.miccha.server.security.JWTUtil;
 import com.miccha.server.user.UserService;
 import com.miccha.server.user.model.User;
@@ -9,6 +11,7 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
@@ -18,6 +21,7 @@ import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
+import static java.util.Objects.isNull;
 
 @AllArgsConstructor
 @Component
@@ -75,5 +79,55 @@ public class UserHandler {
                                                .body(BodyInserters.fromValue(response));
                       })
                       .switchIfEmpty(ServerResponse.status(HttpStatus.UNAUTHORIZED).build());
+    }
+
+    public Mono<ServerResponse> changeSetting(ServerRequest request) {
+        return request.bodyToMono(User.class)
+                      .switchIfEmpty(Mono.error(new EmptyRequestBodyException()))
+                      .zipWith(getCurrentEmail())
+                      .flatMap(tuple -> {
+                          final User newSetting = tuple.getT1();
+                          final String currentEmail = tuple.getT2();
+                          return changeUserName(currentEmail, newSetting.getName())
+                                  .then(changePassword(currentEmail, newSetting.getPassword()))
+                                  .then(changeEmail(currentEmail, newSetting.getEmail()));
+                      })
+                      .then(ServerResponse.ok().build());
+    }
+
+    private Mono<String> getCurrentEmail() {
+        return ReactiveSecurityContextHolder
+                .getContext()
+                .map(securityContext -> (String) securityContext.getAuthentication().getPrincipal());
+    }
+
+    private Mono<Void> changeUserName(String currentEmail, String name) {
+        if (isNull(name)) {
+            return Mono.empty();
+        }
+        return userService.changeUserName(currentEmail, name);
+    }
+
+    private Mono<Void> changePassword(String currentEmail, String password) {
+        if (isNull(password)) {
+            return Mono.empty();
+        }
+        return userService.changePassword(currentEmail, password);
+    }
+
+    private Mono<Void> changeEmail(String currentEmail, String newEmail) {
+        if (isNull(newEmail)) {
+            return Mono.empty();
+        }
+        return userService.requestChangeEmail(currentEmail, newEmail);
+    }
+
+    public Mono<ServerResponse> confirmChangeEmail(ServerRequest request) {
+        return request.bodyToMono(User.class)
+                      .switchIfEmpty(Mono.error(new EmptyRequestBodyException()))
+                      .map(user -> user.getToken())
+                      .switchIfEmpty(Mono.error(new RequestMissingTokenException()))
+                      .flatMap(token -> userService.changeEmail(token))
+                      .then(ServerResponse.ok().build());
     }
 }

@@ -25,6 +25,7 @@ public class UserService {
     private final PasswordHasher passwordHasher;
     private final UserRepository userRepository;
     private final EmailSender emailSender;
+    private final EmailChangeService emailChangeService;
 
     public Mono<Void> signUp(@NonNull User user) {
         return Mono.just(user)
@@ -121,5 +122,57 @@ public class UserService {
 
     public Mono<User> findByUsername(@NonNull String username) {
         return userRepository.findByEmail(username);
+    }
+
+    public Mono<Void> requestChangeEmail(@NonNull String currentEmail, @NonNull String newEmail) {
+        return userRepository.findByEmail(currentEmail)
+                             .switchIfEmpty(Mono.error(new EmailNotFoundException()))
+                             .flatMap(user -> emailChangeService.registerEmailChange(user.getId(), newEmail))
+                             .switchIfEmpty(Mono.error(new EmailChangeTokenUpdateFailedException()))
+                             .flatMap(token -> {
+                                 final String subject = "this is the token for email change";
+                                 return emailSender.send(subject, token, newEmail);
+                             });
+    }
+
+    public Mono<Void> changeEmail(@NonNull String token) {
+        return emailChangeService.getEmailChangeRequest(token)
+                                 .switchIfEmpty(Mono.error(new EmailChangeTokenNotFoundException()))
+                                 .flatMap(request -> {
+                                     return userRepository.findById(request.getUserId())
+                                                          .map(user -> {
+                                                              user.setEmail(request.getEmail());
+                                                              return user;
+                                                          });
+                                 })
+                                 .flatMap(userRepository::save)
+                                 .switchIfEmpty(Mono.error(new EmailUpdateFailedException()))
+                                 .then(Mono.empty());
+    }
+
+    public Mono<Void> changeUserName(@NonNull String currentEmail, @NonNull String newUserName) {
+        return userRepository.findByEmail(currentEmail)
+                             .switchIfEmpty(Mono.error(new EmailNotFoundException()))
+                             .flatMap(user -> {
+                                 user.setName(newUserName);
+                                 return userRepository.save(user);
+                             })
+                             .switchIfEmpty(Mono.error(new NameUpdateFailedException()))
+                             .then(Mono.empty());
+    }
+
+    public Mono<Void> changePassword(@NonNull String currentEmail, @NonNull String newPassword) {
+        if (isValidPassword(newPassword) == false) {
+            return Mono.error(new InvalidPasswordException());
+        }
+
+        return userRepository.findByEmail(currentEmail)
+                             .switchIfEmpty(Mono.error(new EmailNotFoundException()))
+                             .flatMap(user -> {
+                                 user.setPassword(passwordHasher.getHahsedPassword(newPassword));
+                                 return userRepository.save(user);
+                             })
+                             .switchIfEmpty(Mono.error(new PasswordUpdateFailedException()))
+                             .then(Mono.empty());
     }
 }
