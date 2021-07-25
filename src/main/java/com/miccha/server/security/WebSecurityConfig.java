@@ -39,6 +39,7 @@ public class WebSecurityConfig {
                 .pathMatchers("/api/password/retrieve").permitAll()
                 .pathMatchers("/api/users").permitAll()
                 .pathMatchers("/api/email/reset").permitAll()
+                .pathMatchers("/api/renew").permitAll()
                 .anyExchange().authenticated()
                 .and().build();
     }

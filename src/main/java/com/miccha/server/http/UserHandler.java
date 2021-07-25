@@ -3,14 +3,17 @@ package com.miccha.server.http;
 import com.google.common.collect.ImmutableMap;
 import com.miccha.server.ErrorCode;
 import com.miccha.server.exception.model.EmptyRequestBodyException;
+import com.miccha.server.exception.model.RefreshTokenNotFoundException;
 import com.miccha.server.exception.model.RequestMissingTokenException;
 import com.miccha.server.security.JWTUtil;
 import com.miccha.server.user.UserService;
 import com.miccha.server.user.model.User;
 import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -19,6 +22,7 @@ import org.springframework.web.reactive.function.server.ServerRequest;
 import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import static java.util.Objects.isNull;
@@ -75,8 +79,13 @@ public class UserHandler {
                           response.put("email", user.getEmail());
                           response.put("name", user.getName());
 
-                          return ServerResponse.ok()
-                                               .body(BodyInserters.fromValue(response));
+                          return userService.updateRefreshToken(user)
+                                            .flatMap(refreshToken -> {
+                                                return ServerResponse
+                                                        .ok()
+                                                        .cookie(ResponseCookie.from("refreshToken", refreshToken).build())
+                                                        .body(BodyInserters.fromValue(response));
+                                            });
                       })
                       .switchIfEmpty(ServerResponse.status(HttpStatus.UNAUTHORIZED).build());
     }
@@ -129,5 +138,20 @@ public class UserHandler {
                       .switchIfEmpty(Mono.error(new RequestMissingTokenException()))
                       .flatMap(token -> userService.changeEmail(token))
                       .then(ServerResponse.ok().build());
+    }
+
+    public Mono<ServerResponse> createNewAccessToken(ServerRequest request) {
+        final HttpCookie refreshToken = request.cookies().getFirst("refreshToken");
+        if (isNull(refreshToken)) {
+            return Mono.error(new RefreshTokenNotFoundException());
+        }
+
+        return userService.createAccessToken(refreshToken.getValue())
+                          .flatMap(accessToken -> {
+                              final Map<String, String> response
+                                      = Collections.singletonMap("accessToken", accessToken);
+                              return ServerResponse.ok()
+                                                   .body(BodyInserters.fromValue(response));
+                          });
     }
 }

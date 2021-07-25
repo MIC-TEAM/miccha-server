@@ -18,6 +18,7 @@ public class UserRouter {
                               .POST("/api/session", handler::login)
                               .POST("/api/setting", handler::changeSetting)
                               .POST("/api/email/reset", handler::confirmChangeEmail)
+                              .POST("/api/renew", handler::createNewAccessToken)
                               .build();
     }
 }

@@ -27,6 +27,7 @@ public class User implements UserDetails {
     private String name;
     private String password;
     private String token;
+    private String refreshToken;
 
     @Transient
     private List<Role> roles = new ArrayList<>();
