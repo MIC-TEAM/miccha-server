@@ -175,4 +175,16 @@ public class UserService {
                              .switchIfEmpty(Mono.error(new PasswordUpdateFailedException()))
                              .then(Mono.empty());
     }
+
+    public Mono<String> updateRefreshToken(@NonNull User user) {
+        final String refreshToken = UUID.randomUUID().toString();
+        user.setRefreshToken(refreshToken);
+        return userRepository.save(user)
+                             .doOnSuccess(updatedUser -> {
+                                 if (isNull(updatedUser)) {
+                                     throw new RefreshTokenUpdateFailedException();
+                                 }
+                             })
+                             .then(Mono.just(refreshToken));
+    }
 }

@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -75,8 +76,13 @@ public class UserHandler {
                           response.put("email", user.getEmail());
                           response.put("name", user.getName());
 
-                          return ServerResponse.ok()
-                                               .body(BodyInserters.fromValue(response));
+                          return userService.updateRefreshToken(user)
+                                            .flatMap(refreshToken -> {
+                                                return ServerResponse
+                                                        .ok()
+                                                        .cookie(ResponseCookie.from("refreshToken", refreshToken).build())
+                                                        .body(BodyInserters.fromValue(response));
+                                            });
                       })
                       .switchIfEmpty(ServerResponse.status(HttpStatus.UNAUTHORIZED).build());
     }
