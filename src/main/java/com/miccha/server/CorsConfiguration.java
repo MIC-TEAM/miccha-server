@@ -17,6 +17,7 @@ public class CorsConfiguration implements WebFluxConfigurer {
     public void addCorsMappings(CorsRegistry registry) {
         final List<String> corsOrigins = corsConfig.getOrigins();
         registry.addMapping("/**")
-                .allowedOrigins(corsOrigins.toArray(new String[corsOrigins.size()]));
+                .allowedOrigins(corsOrigins.toArray(new String[corsOrigins.size()]))
+                .allowCredentials(true);
     }
 }
