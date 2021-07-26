@@ -89,7 +89,7 @@ public class MovieService {
 
     public MovieCollection getWish(String email) {
         return wishRepository.getWish(email)
-                             .collectSortedList()
+                             .collectList()
                              .map(x -> new MovieCollection("wishes", x))
                              .block();
     }
