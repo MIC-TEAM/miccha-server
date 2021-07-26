@@ -1,6 +1,7 @@
 package com.miccha.server.user;
 
 import com.miccha.server.exception.model.*;
+import com.miccha.server.security.AccessToken;
 import com.miccha.server.security.JWTUtil;
 import com.miccha.server.user.model.User;
 import com.miccha.server.utils.EmailSender;
@@ -190,7 +191,7 @@ public class UserService {
                              .then(Mono.just(refreshToken));
     }
 
-    public Mono<String> createAccessToken(@NonNull String refreshToken) {
+    public Mono<AccessToken> createAccessToken(@NonNull String refreshToken) {
         return userRepository.getByRefreshToken(refreshToken)
                              .switchIfEmpty(Mono.error(new InvalidRefreshTokenException()))
                              .map(jwtUtil::generateToken);

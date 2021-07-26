@@ -5,6 +5,7 @@ import com.miccha.server.ErrorCode;
 import com.miccha.server.exception.model.EmptyRequestBodyException;
 import com.miccha.server.exception.model.RefreshTokenNotFoundException;
 import com.miccha.server.exception.model.RequestMissingTokenException;
+import com.miccha.server.security.AccessToken;
 import com.miccha.server.security.JWTUtil;
 import com.miccha.server.user.UserService;
 import com.miccha.server.user.model.User;
@@ -72,10 +73,11 @@ public class UserHandler {
                       })
                       .flatMap(pair -> {
                           final User user = pair.getValue();
-                          final String token = jwtUtil.generateToken(user);
+                          final AccessToken accessToken = jwtUtil.generateToken(user);
 
-                          Map<String, String> response = new HashMap<>();
-                          response.put("accessToken", token);
+                          Map<String, Object> response = new HashMap<>();
+                          response.put("accessToken", accessToken.getAccessToken());
+                          response.put("expiration", accessToken.getExpiration());
                           response.put("email", user.getEmail());
                           response.put("name", user.getName());
 
@@ -148,8 +150,10 @@ public class UserHandler {
 
         return userService.createAccessToken(refreshToken.getValue())
                           .flatMap(accessToken -> {
-                              final Map<String, String> response
-                                      = Collections.singletonMap("accessToken", accessToken);
+                              final Map<String, Object> response = new HashMap<String, Object>() {{
+                                  put("accessToken", accessToken.getAccessToken());
+                                  put("expiration", accessToken.getExpiration());
+                              }};
                               return ServerResponse.ok()
                                                    .body(BodyInserters.fromValue(response));
                           });

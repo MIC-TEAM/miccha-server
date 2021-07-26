@@ -48,10 +48,11 @@ public class JWTUtil {
         return expiration.before(new Date());
     }
 
-    public String generateToken(User user) {
+    public AccessToken generateToken(User user) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", Collections.singleton(Role.ROLE_USER));
-        return doGenerateToken(claims, user.getUsername());
+        final String accessToken = doGenerateToken(claims, user.getUsername());
+        return new AccessToken(accessToken, Long.parseLong(expirationTime));
     }
 
     private String doGenerateToken(Map<String, Object> claims, String username) {
